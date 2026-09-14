@@ -1,6 +1,6 @@
 # Core Bancário Simplificado
 
-[![CI](https://github.com/SEU-USUARIO/core-bancario-simplificado/actions/workflows/ci.yml/badge.svg)](https://github.com/SEU-USUARIO/core-bancario-simplificado/actions/workflows/ci.yml)
+[![CI](https://github.com/Marconcin01/core-bancario-simplificado/actions/workflows/ci.yml/badge.svg)](https://github.com/Marconcin01/core-bancario-simplificado/actions/workflows/ci.yml)
 
 API RESTful de um núcleo bancário simplificado, desenvolvida como projeto de
 portfólio para demonstrar boas práticas de back-end com Java e Spring Boot.
