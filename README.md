@@ -223,31 +223,3 @@ mvn test
 }
 ```
 
-## Decisões de design que valem destaque na entrevista
-
-- **Consistência transacional**: `TransferenciaService.transferir` é anotado
-  com `@Transactional` — débito, crédito e os dois lançamentos de extrato
-  ocorrem como uma única unidade atômica; qualquer falha no meio do processo
-  reverte tudo (rollback automático).
-- **Concorrência**: além da validação de saldo em código, o repositório usa
-  lock pessimista (`SELECT ... FOR UPDATE`) nas duas contas envolvidas antes
-  de qualquer alteração, evitando que duas transferências simultâneas
-  corrompam o saldo. As duas contas são sempre bloqueadas na mesma ordem
-  (menor id primeiro) para prevenir deadlock entre transferências cruzadas.
-- **DTOs em vez de expor entidades**: a API nunca serializa entidades JPA
-  diretamente, evitando N+1 acidental por lazy loading e desacoplando o
-  contrato da API do modelo de dados.
-- **Tratamento de erros centralizado**: um único `@RestControllerAdvice`
-  garante que toda a API responda erros no mesmo formato (`ErroResponse`),
-  incluindo os erros de validação do Bean Validation.
-- **Extensibilidade**: a criação de outro tipo de lançamento (ex.: saque,
-  depósito posterior) exige apenas um novo valor no enum `TipoTransacao` e um
-  novo método de serviço — a estrutura de extrato já suporta.
-
-## Possíveis evoluções futuras
-
-- Migrations versionadas com Flyway em vez de `ddl-auto=update`.
-- Autenticação/autorização (Spring Security + JWT).
-- Paginação e filtros mais ricos na listagem de clientes/contas.
-- Testes de integração com Testcontainers (PostgreSQL real em container).
-- Idempotência na transferência (chave de idempotência por requisição).
