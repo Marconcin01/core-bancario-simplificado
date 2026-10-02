@@ -21,7 +21,7 @@ Documentação interativa dos endpoints via Swagger UI, disponível em
 
 | Camada          | Tecnologia                          |
 |-----------------|--------------------------------------|
-| Linguagem       | Java 17+ (compilado/testado em 21)   |
+| Linguagem       | Java 17+ (compilado/testado)   |
 | Framework       | Spring Boot 3.3                      |
 | Persistência    | Spring Data JPA / Hibernate          |
 | Banco de dados  | PostgreSQL                           |
