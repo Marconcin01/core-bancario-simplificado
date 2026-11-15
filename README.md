@@ -8,6 +8,8 @@ portfólio para demonstrar boas práticas de back-end com Java e Spring Boot.
 O projeto também inclui o painel web **Facilities Bank**, que consome a API
 Spring Boot para demonstrar as operações em uma interface visual.
 
+Acesse a demonstração pública do [Facilities Bank](https://fleet-nitrogen-xwal9ni-marconcin01s-projects.vercel.app).
+
 ### Painel Facilities Bank
 
 ![Painel web Facilities Bank com dados demonstrativos](docs/images/facilities-bank-dashboard.png)
