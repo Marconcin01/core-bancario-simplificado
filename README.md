@@ -8,6 +8,12 @@ portfólio para demonstrar boas práticas de back-end com Java e Spring Boot.
 O projeto também inclui o painel web **Facilities Bank**, que consome a API
 Spring Boot para demonstrar as operações em uma interface visual.
 
+### Painel Facilities Bank
+
+![Painel web Facilities Bank com dados demonstrativos](docs/images/facilities-bank-dashboard.png)
+
+*Captura do painel com dados fictícios para demonstração.*
+
 Documentação interativa dos endpoints via Swagger UI, disponível em
 `http://localhost:8080/swagger-ui.html` com a aplicação rodando.
 
