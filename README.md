@@ -35,8 +35,10 @@ Documentação interativa dos endpoints via Swagger UI, disponível em
 - Cadastro, atualização e remoção de uma chave Pix vinculada à conta.
 - Transferência interna para uma conta identificada pela chave Pix.
 - Registro de depósitos Pix ou TED simulados, lançados no saldo e no extrato.
+- Emissão de cartões de débito virtuais demonstrativos, com bloqueio e
+  desbloqueio; o sistema armazena somente os últimos quatro dígitos.
 - Painel web responsivo para consultar saldo e extrato, cadastrar clientes e
-  contas e iniciar transferências.
+  contas, iniciar transferências e gerenciar cartões.
 
 ## Stack técnica
 
@@ -232,6 +234,16 @@ próprio banco de dados do projeto; a transferência é uma simulação interna 
 não envia pagamentos pela rede Pix do Banco Central. O atalho **Depositar**
 exibe a chave Pix ou os dados de TED da conta conectada e registra um crédito
 simulado no saldo e no extrato; ele não confirma recebimentos externos.
+
+### Cartões
+
+Cartões de débito virtuais são demonstrativos: o banco armazena somente os
+últimos quatro dígitos e não processa compras reais.
+
+- GET /api/contas/{numero}/cartoes — lista cartões da conta.
+- POST /api/contas/{numero}/cartoes — emite um cartão virtual.
+- PATCH /api/cartoes/{id}/status — bloqueia ou desbloqueia um cartão com os
+  valores {"status":"BLOQUEADO"} ou {"status":"ATIVO"}.
 
 ### Transferências
 

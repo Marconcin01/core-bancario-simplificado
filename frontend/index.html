@@ -26,6 +26,24 @@
     @media(max-width:600px){.manage-grid{grid-template-columns:1fr}.manage-modal{padding:20px}}
     .statement-modal{width:min(760px,100%);max-height:calc(100vh - 36px);overflow:auto}.statement-balance{display:flex;justify-content:space-between;align-items:center;background:#edf4e9;border-radius:13px;padding:15px 17px;margin:4px 0 16px;color:#637168;font-size:12px}.statement-balance strong{color:var(--green);font:700 18px Manrope}.statement-footer{display:flex;align-items:center;justify-content:space-between;margin-top:12px;color:var(--muted);font-size:12px}.statement-footer>div{display:flex;gap:8px}.statement-footer .icon-btn{width:36px;height:36px}.statement-empty{text-align:center;color:var(--muted);padding:28px 10px}.statement-table-wrap{overflow-x:auto}.deposit-details{display:grid;gap:9px;background:#edf4e9;border:1px solid #dfe9dc;border-radius:14px;padding:16px;margin:15px 0}.deposit-detail-label{font-size:11px;color:#68766d;font-weight:700}.deposit-details strong{font:700 16px Manrope;overflow-wrap:anywhere;color:var(--green)}.deposit-details small{font-size:11px;color:#77837b}.deposit-details .link{justify-self:start;padding:0}.simulation-note{background:#fff8e9;color:#846d3b;border-radius:10px;padding:11px 12px;font-size:11px;line-height:1.5;margin:12px 0}
   </style>
+  <style>
+    .cards-modal{width:min(640px,100%);max-height:92dvh;overflow-y:auto}
+    .cards-controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:end}.cards-controls .field{min-width:0}
+    .card-notice{margin:14px 0!important;padding:11px 13px;background:#f3f5ef;border-radius:11px;line-height:1.5}
+    .cards-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(245px,1fr));gap:14px}
+    .cards-empty{grid-column:1/-1;color:var(--muted);background:#f7f8f6;border:1px dashed var(--line);border-radius:14px;padding:18px;text-align:center;font-size:13px;line-height:1.55}
+    .card-item{display:grid;gap:9px}
+    .bank-card{min-height:170px;border-radius:18px;padding:18px;color:#fff;background:linear-gradient(135deg,#173d32,#176b50 70%,#225947);position:relative;overflow:hidden;box-shadow:0 10px 24px #10251c22}
+    .bank-card:after{content:"";position:absolute;width:180px;height:180px;border:1px solid #ffffff1c;border-radius:50%;right:-54px;top:-72px;box-shadow:0 0 0 23px #ffffff08,0 0 0 47px #ffffff06}
+    .bank-card-head,.bank-card-foot{display:flex;align-items:center;justify-content:space-between;position:relative;z-index:1}
+    .bank-card-brand{font:800 12px Manrope;letter-spacing:1px}.bank-card-brand small{display:block;font:600 9px 'DM Sans';letter-spacing:2px;color:#d5f27a;margin-top:3px}
+    .card-state{font-size:9px;letter-spacing:.7px;text-transform:uppercase;background:#ffffff20;border-radius:99px;padding:5px 8px}.card-state.blocked{background:#7f393c}
+    .bank-chip{width:30px;height:23px;border:1px solid #d5f27a;border-radius:5px;margin-top:17px;background:linear-gradient(90deg,transparent 47%,#d5f27a 48%,#d5f27a 51%,transparent 52%),linear-gradient(0deg,transparent 47%,#d5f27a 48%,#d5f27a 51%,transparent 52%)}
+    .bank-card-number{font:600 16px Manrope;letter-spacing:2px;margin:11px 0 13px;position:relative;z-index:1}.bank-card-foot{align-items:end}
+    .bank-card-foot small{display:block;font-size:8px;color:#c2d3cb;letter-spacing:1px;margin-bottom:4px}.bank-card-foot span{font-size:10px;font-weight:600}.bank-card-type{font-size:9px;letter-spacing:1px;color:#d5f27a}
+    .card-action{border:1px solid var(--line);background:white;border-radius:10px;padding:9px;color:var(--green);font-size:12px;font-weight:700}.card-action.unblock{color:#8f443c}
+    @media(max-width:600px){.cards-controls{grid-template-columns:1fr}.cards-modal{padding:21px}}
+  </style>
 </head>
 <body>
 <div id="mobileNavBackdrop" class="mobile-nav-backdrop"></div>
@@ -38,7 +56,7 @@
       <button onclick="openStatement()"><span class="ico">▤</span><span class="nav-text">Extrato</span></button>
       <button onclick="openManagement()"><span class="ico">＋</span><span class="nav-text">Clientes e contas</span></button>
       <button onclick="openPixManager()"><span class="ico">◇</span><span class="nav-text">Chave Pix</span></button>
-      <button onclick="toast('Gestão de cartões em breve')"><span class="ico">▱</span><span class="nav-text">Cartões</span></button>
+      <button onclick="openCards()"><span class="ico">▱</span><span class="nav-text">Cartões</span></button>
     </nav></div>
     <div class="sidebar-bottom"><div class="nav-label">Preferências</div><nav class="nav"><button onclick="openConnection()"><span class="ico">⚙</span><span class="nav-text">Conectar API</span></button><button onclick="toast('Central de ajuda')"><span class="ico">?</span><span class="nav-text">Ajuda</span></button></nav><div class="profile"><div class="avatar" id="profileAvatar">RM</div><div><strong id="profileName">Renan Marconcin</strong><small>Conta pessoal</small></div></div></div>
   </aside>
@@ -61,6 +79,7 @@
 <div class="modal-backdrop" id="connectionModal" onclick="if(event.target===this)closeConnection()"><form class="modal" id="connectionForm"><div class="modal-head"><h2>Conectar sua conta</h2><button type="button" class="close" onclick="closeConnection()">×</button></div><p>Escolha um cliente e uma conta cadastrados na API.</p><div class="field"><label for="apiUrl">Endereço da API</label><input id="apiUrl" type="url" value="http://localhost:8080" required></div><button class="submit" id="loadClients" type="button" onclick="loadClients()">Buscar clientes →</button><div class="field"><label for="clientSelect">Cliente</label><select id="clientSelect" disabled required><option value="">Busque os clientes primeiro</option></select></div><div class="field"><label for="accountSelect">Conta</label><select id="accountSelect" disabled required><option value="">Selecione um cliente</option></select></div><button class="submit" id="connectButton" type="submit" disabled>Conectar conta</button></form></div>
 <div class="modal-backdrop" id="managementModal" onclick="if(event.target===this)closeManagement()"><div class="modal manage-modal"><div class="modal-head"><h2>Clientes e contas</h2><button type="button" class="close" onclick="closeManagement()">×</button></div><p>Cadastre um cliente ou abra uma conta bancária.</p><p id="managementStatus" role="status" style="color:#bd5c4b"></p><div class="manage-grid"><form class="manage-section" id="clientForm"><h3>Novo cliente</h3><p>Os dados são enviados à API do projeto.</p><div class="field"><label for="newName">Nome completo</label><input id="newName" name="nome" autocomplete="name" required></div><div class="field"><label for="newCpf">CPF (11 números)</label><input id="newCpf" name="cpf" inputmode="numeric" pattern="\d{11}" maxlength="11" placeholder="Somente números" required></div><div class="field"><label for="newEmail">E-mail</label><input id="newEmail" name="email" type="email" autocomplete="email" required></div><button class="submit" id="createClientButton" type="submit" disabled>Cadastrar cliente</button></form><form class="manage-section" id="accountForm"><h3>Nova conta</h3><p>Escolha um cliente, saldo inicial e chave Pix opcional.</p><div class="field"><label for="accountClient">Cliente</label><select id="accountClient" required><option value="">Carregando clientes...</option></select></div><div class="field"><label for="initialBalance">Saldo inicial</label><input id="initialBalance" type="number" min="0" step="0.01" value="0.00" required></div><div class="field"><label for="newPixKey">Chave Pix (opcional)</label><input id="newPixKey" maxlength="100" placeholder="CPF, e-mail, telefone ou chave aleatória"></div><button class="submit" id="createAccountButton" type="submit" disabled>Abrir conta</button></form></div></div></div>
 <div class="modal-backdrop" id="pixManagerModal" onclick="if(event.target===this)closePixManager()"><form class="modal" id="pixManagerForm"><div class="modal-head"><h2>Chave Pix da conta</h2><button type="button" class="close" onclick="closePixManager()">×</button></div><p>Vincule, atualize ou exclua a chave Pix de uma conta.</p><div class="field"><label for="pixClientSelect">Cliente</label><select id="pixClientSelect" required><option value="">Carregando clientes...</option></select></div><div class="field"><label for="pixAccountSelect">Conta</label><select id="pixAccountSelect" required disabled><option value="">Selecione um cliente</option></select></div><div class="field"><label for="existingPixKey">Chave Pix</label><input id="existingPixKey" maxlength="100" placeholder="CPF, e-mail, telefone ou chave aleatória" required></div><button class="submit" id="savePixKey" type="submit" disabled>Salvar chave Pix</button><button class="danger-button" id="deletePixKey" type="button" disabled onclick="handleDeletePixKey()">Excluir chave Pix</button></form></div>
+<div class="modal-backdrop" id="cardsModal" onclick="if(event.target===this)closeCards()"><section class="modal cards-modal"><div class="modal-head"><h2>Cartões</h2><button type="button" class="close" onclick="closeCards()" aria-label="Fechar cartões">×</button></div><p>Crie e gerencie cartões de débito demonstrativos das suas contas.</p><div class="cards-controls"><div class="field"><label for="cardsClientSelect">Cliente</label><select id="cardsClientSelect"><option value="">Carregando clientes...</option></select></div><div class="field"><label for="cardsAccountSelect">Conta</label><select id="cardsAccountSelect" disabled><option value="">Selecione um cliente</option></select></div></div><button class="submit" id="issueCardButton" type="button" onclick="createCard()" disabled>Emitir cartão virtual</button><p class="card-notice">Cartão apenas para demonstração: não possui número completo, CVV ou pagamentos reais.</p><div id="cardsList" class="cards-list" aria-live="polite"><p class="cards-empty">Selecione uma conta para carregar os cartões.</p></div></section></div>
 <div class="toast" id="toast"></div>
 <script>
   const demoTransactions=[
@@ -105,6 +124,61 @@
   function openTransfer(){const select=document.querySelector('#from');if(!demo){select.innerHTML='<option value="'+escapeHtml(currentAccount)+'">Conta '+escapeHtml(currentAccount)+'</option>'}document.querySelector('#transferModal').classList.add('open')}function closeTransfer(){document.querySelector('#transferModal').classList.remove('open')}
   function toggleMobileMenu(){const open=document.querySelector(".sidebar").classList.toggle("mobile-open");document.querySelector("#mobileNavBackdrop").classList.toggle("open",open);document.body.style.overflow=open?"hidden":""}
   function closeMobileMenu(){document.querySelector(".sidebar").classList.remove("mobile-open");document.querySelector("#mobileNavBackdrop").classList.remove("open");document.body.style.overflow=""}
+  async function openCards(){document.querySelector('#cardsModal').classList.add('open');await loadCardClients()}
+  function closeCards(){document.querySelector('#cardsModal').classList.remove('open')}
+  async function loadCardClients(){
+    const clientSelect=document.querySelector('#cardsClientSelect'),accountSelect=document.querySelector('#cardsAccountSelect'),button=document.querySelector('#issueCardButton'),list=document.querySelector('#cardsList');
+    clientSelect.disabled=true;accountSelect.disabled=true;button.disabled=true;
+    clientSelect.innerHTML='<option value="">Carregando clientes...</option>';
+    accountSelect.innerHTML='<option value="">Selecione um cliente</option>';
+    list.innerHTML='<p class="cards-empty">Carregando clientes...</p>';
+    try{
+      availableClients=await apiRequest('/api/clientes');
+      clientSelect.innerHTML='<option value="">Selecione um cliente</option>'+availableClients.map(c=>'<option value="'+escapeHtml(c.id)+'">'+escapeHtml(c.nome)+' · #'+escapeHtml(c.id)+'</option>').join('');
+      clientSelect.disabled=false;
+      if(!availableClients.length){clientSelect.innerHTML='<option value="">Nenhum cliente cadastrado</option>';list.innerHTML='<p class="cards-empty">Cadastre um cliente e abra uma conta antes de emitir um cartão.</p>';return}
+      clientSelect.value=currentClient&&availableClients.some(c=>String(c.id)===String(currentClient.id))?String(currentClient.id):String(availableClients[0].id);
+      await loadCardAccounts();
+    }catch(err){clientSelect.innerHTML='<option value="">API indisponível</option>';list.innerHTML='<p class="cards-empty">Não foi possível carregar os clientes. '+escapeHtml(err.message)+'</p>'}
+  }
+  async function loadCardAccounts(){
+    const clientId=document.querySelector('#cardsClientSelect').value,accountSelect=document.querySelector('#cardsAccountSelect'),button=document.querySelector('#issueCardButton'),list=document.querySelector('#cardsList');
+    accountSelect.disabled=true;button.disabled=true;accountSelect.innerHTML='<option value="">Carregando contas...</option>';list.innerHTML='<p class="cards-empty">Carregando contas...</p>';
+    if(!clientId){accountSelect.innerHTML='<option value="">Selecione um cliente</option>';return}
+    try{
+      const accounts=await apiRequest('/api/contas?clienteId='+encodeURIComponent(clientId));
+      accountSelect.innerHTML='<option value="">Selecione uma conta</option>'+accounts.map(a=>'<option value="'+escapeHtml(a.numero)+'">Conta '+escapeHtml(a.numero)+'</option>').join('');
+      if(!accounts.length){accountSelect.innerHTML='<option value="">Cliente sem contas</option>';list.innerHTML='<p class="cards-empty">Este cliente ainda não tem conta. Abra uma em <strong>Clientes e contas</strong> para emitir um cartão.</p>';return}
+      accountSelect.disabled=false;
+      accountSelect.value=accounts.some(a=>a.numero===currentAccount)?currentAccount:accounts[0].numero;
+      await loadCards();
+    }catch(err){accountSelect.innerHTML='<option value="">Falha ao carregar contas</option>';list.innerHTML='<p class="cards-empty">Não foi possível carregar as contas. '+escapeHtml(err.message)+'</p>'}
+  }
+  async function loadCards(){
+    const numeroConta=document.querySelector('#cardsAccountSelect').value,button=document.querySelector('#issueCardButton'),list=document.querySelector('#cardsList');
+    button.disabled=!numeroConta;if(!numeroConta)return;list.innerHTML='<p class="cards-empty">Carregando cartões...</p>';
+    try{renderCards(await apiRequest('/api/contas/'+encodeURIComponent(numeroConta)+'/cartoes'))}
+    catch(err){list.innerHTML='<p class="cards-empty">Não foi possível carregar os cartões. '+escapeHtml(err.message)+'</p>'}
+  }
+  function renderCards(cards){
+    const list=document.querySelector('#cardsList');
+    if(!cards.length){list.innerHTML='<p class="cards-empty">Esta conta ainda não tem cartão. Toque em <strong>Emitir cartão virtual</strong> para criar o primeiro.</p>';return}
+    list.innerHTML=cards.map(c=>{
+      const bloqueado=c.status==='BLOQUEADO',novoStatus=bloqueado?'ATIVO':'BLOQUEADO';
+      return '<article class="card-item"><div class="bank-card"><div class="bank-card-head"><div class="bank-card-brand">FACILITIES<small>BANK</small></div><span class="card-state '+(bloqueado?'blocked':'')+'">'+(bloqueado?'Bloqueado':'Ativo')+'</span></div><div class="bank-chip" aria-hidden="true"></div><div class="bank-card-number">•••• &nbsp; •••• &nbsp; •••• &nbsp;'+escapeHtml(c.ultimosDigitos)+'</div><div class="bank-card-foot"><div><small>PORTADOR</small><span>'+escapeHtml(c.clienteNome)+'</span></div><div><small>VALIDADE</small><span>'+escapeHtml(c.validade)+'</span></div><b class="bank-card-type">DÉBITO</b></div></div><button class="card-action '+(bloqueado?'unblock':'')+'" type="button" onclick="updateCardStatus('+Number(c.id)+', \''+novoStatus+'\')">'+(bloqueado?'Desbloquear cartão':'Bloquear cartão')+'</button></article>'
+    }).join('')
+  }
+  async function createCard(){
+    const numeroConta=document.querySelector('#cardsAccountSelect').value,button=document.querySelector('#issueCardButton');
+    if(!numeroConta)return;button.disabled=true;button.textContent='Emitindo...';
+    try{await apiRequest('/api/contas/'+encodeURIComponent(numeroConta)+'/cartoes',{method:'POST'});await loadCards();toast('Cartão virtual emitido')}
+    catch(err){toast(err.message)}
+    finally{button.textContent='Emitir cartão virtual';button.disabled=!document.querySelector('#cardsAccountSelect').value}
+  }
+  async function updateCardStatus(id,status){
+    try{await apiRequest('/api/cartoes/'+encodeURIComponent(id)+'/status',{method:'PATCH',headers:{'Content-Type':'application/json'},body:JSON.stringify({status})});await loadCards();toast(status==='BLOQUEADO'?'Cartão bloqueado':'Cartão desbloqueado')}
+    catch(err){toast(err.message)}
+  }
   function toast(msg){const el=document.querySelector('#toast');el.textContent=msg;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),3200)}
   document.querySelector('#clientSelect').addEventListener('change',loadAccounts);
   document.querySelector('#accountSelect').addEventListener('change',()=>document.querySelector('#connectButton').disabled=!document.querySelector('#accountSelect').value);
@@ -120,6 +194,7 @@
   document.querySelector('#transferForm').addEventListener('submit',async e=>{e.preventDefault();const destination=document.querySelector('#to').value.trim(),pix=document.querySelector('#destinationType').value==='pix',body={numeroContaOrigem:currentAccount,valor:Number(document.querySelector('#value').value),...(pix?{chavePixDestino:destination}:{numeroContaDestino:destination})};if(demo){toast('Prévia: conecte a API para realizar a transferência');return}try{const d=await apiRequest('/api/transferencias',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});closeTransfer();toast(d.mensagem||'Transferência realizada com sucesso');document.querySelector('#transferForm').reset();document.querySelector('#destinationLabel').textContent='Número da conta de destino';document.querySelector('#to').placeholder='Ex.: 87654321';await refreshData()}catch(err){toast(err.message)}});
   async function restoreConnection(){const saved=JSON.parse(localStorage.getItem('auroraConnection')||'null');renderRows(demoTransactions);if(!saved)return;apiBase=isLocalApiHost?(localStorage.getItem('auroraApi')||apiBase):defaultApiBase;try{availableClients=await apiRequest('/api/clientes');const client=availableClients.find(c=>String(c.id)===String(saved.clientId));if(!client)return;const accounts=await apiRequest('/api/contas?clienteId='+encodeURIComponent(client.id));if(!accounts.some(a=>a.numero===saved.account))return;currentClient=client;currentAccount=saved.account;demo=false;document.querySelector('#apiStatus').textContent='API conectada';document.querySelector('#apiDot').classList.add('live');document.querySelector('#profileName').textContent=client.nome;document.querySelector('#profileAvatar').textContent=client.nome.split(/\s+/).map(x=>x[0]).slice(0,2).join('').toUpperCase();document.querySelector('.greeting h1').innerHTML='Olá, '+escapeHtml(client.nome.split(/\s+/)[0])+' <span>✦</span>';document.querySelector('#accountName').textContent='Conta corrente · '+client.nome;await refreshData()}catch(e){document.querySelector('#apiStatus').textContent='API indisponível';document.querySelector('#apiDot').classList.remove('live')}}
   document.querySelector('#greetingDate').textContent=new Intl.DateTimeFormat('pt-BR',{weekday:'long',day:'numeric',month:'long'}).format(new Date()).toUpperCase();
+  document.querySelector('#cardsClientSelect').addEventListener('change',loadCardAccounts);document.querySelector('#cardsAccountSelect').addEventListener('change',loadCards);
   document.querySelector("#mobileNavBackdrop").addEventListener("click",closeMobileMenu);document.querySelectorAll(".nav button").forEach(button=>button.addEventListener("click",closeMobileMenu));
   restoreConnection();
 </script>
