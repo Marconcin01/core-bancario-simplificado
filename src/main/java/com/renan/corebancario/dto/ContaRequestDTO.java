@@ -2,6 +2,7 @@ package com.renan.corebancario.dto;
 
 import jakarta.validation.constraints.DecimalMin;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 import java.math.BigDecimal;
 
@@ -15,6 +16,9 @@ public record ContaRequestDTO(
 
         @NotNull(message = "O saldo inicial e obrigatorio")
         @DecimalMin(value = "0.0", inclusive = true, message = "O saldo inicial nao pode ser negativo")
-        BigDecimal saldoInicial
+        BigDecimal saldoInicial,
+
+        @Size(max = 100, message = "A chave Pix deve ter no maximo 100 caracteres")
+        String chavePix
 ) {
 }

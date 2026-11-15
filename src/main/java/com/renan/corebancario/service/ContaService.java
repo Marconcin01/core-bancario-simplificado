@@ -2,6 +2,7 @@ package com.renan.corebancario.service;
 
 import com.renan.corebancario.dto.*;
 import com.renan.corebancario.exception.RecursoNaoEncontradoException;
+import com.renan.corebancario.exception.RegraDeNegocioException;
 import com.renan.corebancario.model.Cliente;
 import com.renan.corebancario.model.Conta;
 import com.renan.corebancario.model.Transacao;
@@ -42,8 +43,11 @@ public class ContaService {
         Conta conta = Conta.builder()
                 .numero(gerarNumeroDeContaUnico())
                 .saldo(dto.saldoInicial())
+                .chavePix(normalizarChavePix(dto.chavePix()))
                 .cliente(cliente)
                 .build();
+
+        validarChavePixDisponivel(conta.getChavePix());
 
         Conta contaSalva = contaRepository.save(conta);
 
@@ -53,6 +57,62 @@ public class ContaService {
         }
 
         return ContaResponseDTO.from(contaSalva);
+    }
+
+    @Transactional
+    public ContaResponseDTO registrarChavePix(String numeroConta, String chavePix) {
+        Conta conta = buscarContaOuFalhar(numeroConta);
+        String chaveNormalizada = normalizarChavePix(chavePix);
+        if (!java.util.Objects.equals(conta.getChavePix(), chaveNormalizada)) {
+            validarChavePixDisponivel(chaveNormalizada);
+        }
+        conta.setChavePix(chaveNormalizada);
+        return ContaResponseDTO.from(contaRepository.save(conta));
+    }
+
+    @Transactional
+    public DepositoResponseDTO depositar(String numeroConta, DepositoRequestDTO dto) {
+        Conta encontrada = buscarContaOuFalhar(numeroConta);
+        Conta conta = contaRepository.buscarPorIdComLock(encontrada.getId())
+                .orElseThrow(() -> new RecursoNaoEncontradoException(
+                        "Conta nao encontrada com numero: " + numeroConta));
+
+        TipoTransacao tipo = dto.meio() == DepositoRequestDTO.MeioDeposito.PIX
+                ? TipoTransacao.DEPOSITO_PIX
+                : TipoTransacao.DEPOSITO_TED;
+        conta.creditar(dto.valor());
+        Conta contaAtualizada = contaRepository.save(conta);
+        String descricao = "Deposito " + dto.meio() + " simulado";
+        registrarLancamento(contaAtualizada, tipo, dto.valor(), null, null, descricao);
+
+        return new DepositoResponseDTO(
+                "Deposito " + dto.meio() + " registrado com sucesso (simulacao)",
+                contaAtualizada.getNumero(),
+                dto.meio(),
+                dto.valor(),
+                contaAtualizada.getSaldo(),
+                java.time.LocalDateTime.now()
+        );
+    }
+
+    @Transactional
+    public void removerChavePix(String numeroConta) {
+        Conta conta = buscarContaOuFalhar(numeroConta);
+        conta.setChavePix(null);
+        contaRepository.save(conta);
+    }
+
+    private String normalizarChavePix(String chavePix) {
+        if (chavePix == null || chavePix.isBlank()) {
+            return null;
+        }
+        return chavePix.trim();
+    }
+
+    private void validarChavePixDisponivel(String chavePix) {
+        if (chavePix != null && contaRepository.existsByChavePix(chavePix)) {
+            throw new RegraDeNegocioException("Esta chave Pix ja esta vinculada a outra conta");
+        }
     }
 
     public ContaResponseDTO buscarPorId(Long id) {

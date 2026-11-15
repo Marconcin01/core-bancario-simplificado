@@ -12,5 +12,11 @@ public enum TipoTransacao {
     TRANSFERENCIA_DEBITO,
 
     /** Lancamento de credito referente ao deposito do saldo inicial da conta. */
-    DEPOSITO_INICIAL
+    DEPOSITO_INICIAL,
+
+    /** Deposito Pix simulado e registrado no extrato da conta. */
+    DEPOSITO_PIX,
+
+    /** Deposito TED simulado e registrado no extrato da conta. */
+    DEPOSITO_TED
 }

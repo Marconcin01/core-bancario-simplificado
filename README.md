@@ -5,8 +5,16 @@
 API RESTful de um núcleo bancário simplificado, desenvolvida como projeto de
 portfólio para demonstrar boas práticas de back-end com Java e Spring Boot.
 
+O projeto também inclui o painel web **Facilities Bank**, que consome a API
+Spring Boot para demonstrar as operações em uma interface visual.
+
 Documentação interativa dos endpoints via Swagger UI, disponível em
 `http://localhost:8080/swagger-ui.html` com a aplicação rodando.
+
+> Projeto de portfólio para fins didáticos. A chave Pix é usada apenas para
+> localizar contas dentro deste projeto; transferências não são enviadas pela
+> rede Pix do Banco Central. A aplicação não implementa autenticação e não
+> deve ser usada para movimentar dinheiro real.
 
 ## Funcionalidades
 
@@ -16,12 +24,17 @@ Documentação interativa dos endpoints via Swagger UI, disponível em
 - Consulta de extrato (histórico de lançamentos) paginado de uma conta.
 - Transferência de valores entre contas, com validação estrita de saldo
   disponível e consistência garantida por transação (`@Transactional`).
+- Cadastro, atualização e remoção de uma chave Pix vinculada à conta.
+- Transferência interna para uma conta identificada pela chave Pix.
+- Registro de depósitos Pix ou TED simulados, lançados no saldo e no extrato.
+- Painel web responsivo para consultar saldo e extrato, cadastrar clientes e
+  contas e iniciar transferências.
 
 ## Stack técnica
 
 | Camada          | Tecnologia                          |
 |-----------------|--------------------------------------|
-| Linguagem       | Java 17+ (compilado/testado)   |
+| Linguagem       | Java 17+                             |
 | Framework       | Spring Boot 3.3                      |
 | Persistência    | Spring Data JPA / Hibernate          |
 | Banco de dados  | PostgreSQL                           |
@@ -35,6 +48,8 @@ Documentação interativa dos endpoints via Swagger UI, disponível em
 core-bancario-simplificado/
 ├── pom.xml
 ├── README.md
+├── frontend/
+│   └── index.html              # Painel web Facilities Bank
 └── src/
     ├── main/
     │   ├── java/com/renan/corebancario/
@@ -81,20 +96,20 @@ comum em aplicações Spring Boot de médio porte:
 
 - JDK 17 ou superior
 - Maven 3.8+
-- PostgreSQL em execução localmente (ou em container)
+- Docker e Docker Compose (ou PostgreSQL em execução localmente)
+- Python 3 (para servir a interface web)
 
-### 2. Criar o banco de dados
+### 2. Iniciar o banco de dados
 
-```sql
-CREATE DATABASE core_bancario_db;
+```bash
+docker compose up -d postgres
 ```
 
-### 3. Ajustar credenciais
+O Compose cria o banco `core_bancario_db` com as credenciais locais usadas pela
+aplicação. Para usar outro PostgreSQL, edite as configurações em
+`src/main/resources/application.properties`.
 
-Edite `src/main/resources/application.properties` com o usuário/senha do seu
-PostgreSQL, caso sejam diferentes de `postgres` / `postgres`.
-
-### 4. Rodar a aplicação
+### 3. Rodar a API
 
 ```bash
 mvn spring-boot:run
@@ -103,6 +118,19 @@ mvn spring-boot:run
 A API sobe em `http://localhost:8080`. As tabelas são criadas/atualizadas
 automaticamente pelo Hibernate (`spring.jpa.hibernate.ddl-auto=update`) — em
 produção, prefira uma ferramenta de migration como Flyway ou Liquibase.
+
+### 4. Abrir o painel web
+
+Em outro terminal, na raiz do projeto:
+
+```bash
+python -m http.server 8765 --directory frontend
+```
+
+Acesse `http://localhost:8765` e use **Clientes e contas** para cadastrar um
+cliente e abrir uma conta. Depois, use **Conectar API** para selecionar uma
+conta, ou abra a conta recém-criada, que será conectada automaticamente. O
+Swagger também fica disponível em `http://localhost:8080/swagger-ui.html`.
 
 ### 5. Rodar os testes
 
@@ -137,6 +165,9 @@ mvn test
 | POST   | `/api/contas`                        | Abre uma conta para um cliente existente      |
 | GET    | `/api/contas/{id}`                   | Busca uma conta pelo id                       |
 | GET    | `/api/contas?clienteId={id}`         | Lista as contas de um cliente                 |
+| PUT    | `/api/contas/{numero}/chave-pix`     | Cadastra ou atualiza a chave Pix da conta      |
+| DELETE | `/api/contas/{numero}/chave-pix`     | Remove a chave Pix da conta                    |
+| POST   | `/api/contas/{numero}/depositos`     | Registra depósito Pix ou TED simulado          |
 | GET    | `/api/contas/{numero}/saldo`         | Consulta o saldo disponível de uma conta      |
 | GET    | `/api/contas/{numero}/extrato`       | Consulta o extrato paginado de uma conta      |
 
@@ -145,7 +176,8 @@ mvn test
 ```json
 {
   "clienteId": 1,
-  "saldoInicial": 500.00
+  "saldoInicial": 500.00,
+  "chavePix": "maria.souza@email.com"
 }
 ```
 
@@ -181,6 +213,18 @@ mvn test
 }
 ```
 
+O campo `chavePix` é opcional e único. Também é possível vincular uma chave a
+uma conta já aberta usando `PUT /api/contas/{numero}/chave-pix` com o JSON
+`{"chavePix":"maria.souza@email.com"}`.
+Para removê-la, use `DELETE /api/contas/{numero}/chave-pix`.
+
+A interface também permite vincular uma chave Pix a uma conta já existente
+pelo menu **Chave Pix**. Nesta versão, a chave identifica contas dentro do
+próprio banco de dados do projeto; a transferência é uma simulação interna e
+não envia pagamentos pela rede Pix do Banco Central. O atalho **Depositar**
+exibe a chave Pix ou os dados de TED da conta conectada e registra um crédito
+simulado no saldo e no extrato; ele não confirma recebimentos externos.
+
 ### Transferências
 
 | Método | Endpoint              | Descrição                        |
@@ -193,6 +237,17 @@ mvn test
 {
   "numeroContaOrigem": "11111111",
   "numeroContaDestino": "22222222",
+  "valor": 30.00
+}
+```
+
+Para transferir usando uma chave Pix, informe `chavePixDestino` no lugar de
+`numeroContaDestino`:
+
+```json
+{
+  "numeroContaOrigem": "11111111",
+  "chavePixDestino": "maria.souza@email.com",
   "valor": 30.00
 }
 ```

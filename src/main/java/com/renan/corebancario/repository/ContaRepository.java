@@ -13,7 +13,11 @@ public interface ContaRepository extends JpaRepository<Conta, Long> {
 
     Optional<Conta> findByNumero(String numero);
 
+    Optional<Conta> findByChavePix(String chavePix);
+
     boolean existsByNumero(String numero);
+
+    boolean existsByChavePix(String chavePix);
 
     List<Conta> findByClienteId(Long clienteId);
 

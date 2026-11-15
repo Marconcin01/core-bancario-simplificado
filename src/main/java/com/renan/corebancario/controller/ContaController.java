@@ -35,6 +35,26 @@ public class ContaController {
         return ResponseEntity.ok(contaService.listarPorCliente(clienteId));
     }
 
+    @PutMapping("/{numero}/chave-pix")
+    public ResponseEntity<ContaResponseDTO> registrarChavePix(
+            @PathVariable String numero,
+            @Valid @RequestBody ChavePixRequestDTO dto) {
+        return ResponseEntity.ok(contaService.registrarChavePix(numero, dto.chavePix()));
+    }
+
+    @DeleteMapping("/{numero}/chave-pix")
+    public ResponseEntity<Void> removerChavePix(@PathVariable String numero) {
+        contaService.removerChavePix(numero);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping("/{numero}/depositos")
+    public ResponseEntity<DepositoResponseDTO> depositar(
+            @PathVariable String numero,
+            @Valid @RequestBody DepositoRequestDTO dto) {
+        return ResponseEntity.ok(contaService.depositar(numero, dto));
+    }
+
     @GetMapping("/{numero}/saldo")
     public ResponseEntity<SaldoResponseDTO> consultarSaldo(@PathVariable String numero) {
         return ResponseEntity.ok(contaService.consultarSaldo(numero));

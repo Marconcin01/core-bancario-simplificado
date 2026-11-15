@@ -14,11 +14,15 @@ public record TransferenciaRequestDTO(
         @NotBlank(message = "O numero da conta de origem e obrigatorio")
         String numeroContaOrigem,
 
-        @NotBlank(message = "O numero da conta de destino e obrigatorio")
         String numeroContaDestino,
+
+        String chavePixDestino,
 
         @NotNull(message = "O valor da transferencia e obrigatorio")
         @DecimalMin(value = "0.01", message = "O valor da transferencia deve ser maior que zero")
         BigDecimal valor
 ) {
+    public TransferenciaRequestDTO(String numeroContaOrigem, String numeroContaDestino, BigDecimal valor) {
+        this(numeroContaOrigem, numeroContaDestino, null, valor);
+    }
 }

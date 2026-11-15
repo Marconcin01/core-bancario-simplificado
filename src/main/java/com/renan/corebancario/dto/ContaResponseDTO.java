@@ -11,7 +11,8 @@ public record ContaResponseDTO(
         BigDecimal saldo,
         Long clienteId,
         String nomeCliente,
-        LocalDateTime dataCriacao
+        LocalDateTime dataCriacao,
+        String chavePix
 ) {
 
     public static ContaResponseDTO from(Conta conta) {
@@ -21,7 +22,8 @@ public record ContaResponseDTO(
                 conta.getSaldo(),
                 conta.getCliente().getId(),
                 conta.getCliente().getNome(),
-                conta.getDataCriacao()
+                conta.getDataCriacao(),
+                conta.getChavePix()
         );
     }
 }

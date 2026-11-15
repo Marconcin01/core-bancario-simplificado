@@ -23,7 +23,8 @@ import java.util.List;
  */
 @Entity
 @Table(name = "contas", uniqueConstraints = {
-        @UniqueConstraint(name = "uk_conta_numero", columnNames = "numero")
+        @UniqueConstraint(name = "uk_conta_numero", columnNames = "numero"),
+        @UniqueConstraint(name = "uk_conta_chave_pix", columnNames = "chave_pix")
 })
 @Getter
 @Setter
@@ -42,6 +43,9 @@ public class Conta {
      */
     @Column(nullable = false, length = 20, unique = true)
     private String numero;
+
+    @Column(name = "chave_pix", length = 100)
+    private String chavePix;
 
     @Column(nullable = false, precision = 19, scale = 2)
     private BigDecimal saldo;

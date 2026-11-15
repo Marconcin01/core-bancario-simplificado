@@ -44,12 +44,20 @@ public class TransferenciaService {
      */
     @Transactional(propagation = Propagation.REQUIRED)
     public TransferenciaResponseDTO transferir(TransferenciaRequestDTO dto) {
-        if (dto.numeroContaOrigem().equals(dto.numeroContaDestino())) {
-            throw new RegraDeNegocioException("A conta de origem e a conta de destino nao podem ser a mesma");
+        boolean destinoPorNumero = dto.numeroContaDestino() != null && !dto.numeroContaDestino().isBlank();
+        boolean destinoPorChavePix = dto.chavePixDestino() != null && !dto.chavePixDestino().isBlank();
+        if (destinoPorNumero == destinoPorChavePix) {
+            throw new RegraDeNegocioException("Informe somente o numero da conta ou a chave Pix de destino");
         }
 
         Conta contaOrigemSemLock = buscarPorNumeroOuFalhar(dto.numeroContaOrigem());
-        Conta contaDestinoSemLock = buscarPorNumeroOuFalhar(dto.numeroContaDestino());
+        Conta contaDestinoSemLock = destinoPorChavePix
+                ? buscarPorChavePixOuFalhar(dto.chavePixDestino().trim())
+                : buscarPorNumeroOuFalhar(dto.numeroContaDestino().trim());
+
+        if (contaOrigemSemLock.getId().equals(contaDestinoSemLock.getId())) {
+            throw new RegraDeNegocioException("A conta de origem e a conta de destino nao podem ser a mesma");
+        }
 
         // Para evitar deadlock quando duas transferencias concorrentes
         // envolvem as mesmas duas contas em ordens opostas (A->B e B->A),
@@ -103,6 +111,11 @@ public class TransferenciaService {
     private Conta buscarPorNumeroOuFalhar(String numero) {
         return contaRepository.findByNumero(numero)
                 .orElseThrow(() -> new RecursoNaoEncontradoException("Conta nao encontrada com numero: " + numero));
+    }
+
+    private Conta buscarPorChavePixOuFalhar(String chavePix) {
+        return contaRepository.findByChavePix(chavePix)
+                .orElseThrow(() -> new RecursoNaoEncontradoException("Nenhuma conta encontrada com essa chave Pix"));
     }
 
     private Conta obterComLockOuFalhar(Long id) {
